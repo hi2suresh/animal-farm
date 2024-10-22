@@ -19,16 +19,11 @@ const animals = [...Array(250).keys()].map((id) => {
 
 console.log(animals);
 
-app.get('/', (req, res) => {
-  res.send('Hello world');
-});
 app.get('/animals', (req, res) => {
   const q = req.query.q?.toLowerCase() || '';
-  console.log(q);
   const results = animals.filter((animal) =>
-    animal.name.toLowerCase().includes(q)
+    animal.animal.toLowerCase().includes(q)
   );
-  console.log(results);
   res.send(results);
 });
 

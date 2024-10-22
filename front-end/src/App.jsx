@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+function useAnimals() {
+  const [animals, setAnimals] = useState([]);
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  useEffect(() => {
+    const prev = localStorage.getItem('lastQuery') || [];
+    setAnimals(prev);
+  }, []);
+  const search = async (q) => {
+    const response = await fetch(
+      'http://localhost:8080/animals?' + new URLSearchParams({ q })
+    );
+    const data = await response.json();
+    setAnimals(data);
+    localStorage.setItem('lastQuery', animals);
+  };
+
+  return { search, animals };
 }
 
-export default App
+function App() {
+  const { search, animals } = useAnimals();
+  return (
+    <>
+      <h1>Animal Search</h1>
+      <input
+        type="text"
+        placeholder="search"
+        onChange={(e) => console.log(search(e.target.value))}
+      />
+      <ul>
+        {animals.map((animal) => (
+          <Animal
+            key={animal.id}
+            animal={animal.animal}
+            name={animal.name}
+            age={animal.age}
+          />
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function Animal({ animal, name, age }) {
+  return (
+    <li>
+      Name: {name} Animal: <strong>{animal}</strong> Age: {age}
+    </li>
+  );
+}
+
+export default App;
