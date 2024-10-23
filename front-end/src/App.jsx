@@ -1,55 +1,58 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import { useEffect, useState } from 'react';
 
-function useAnimals() {
+function App() {
+  const { search, animals } = useAnimalSearch();
+
+  return (
+    <main>
+      <h1>Animal Farm</h1>
+
+      <input
+        type="text"
+        placeholder="Search"
+        onChange={(e) => search(e.target.value)}
+      />
+
+      <ul>
+        {animals.map((animal) => (
+          <Animal key={animal.id} {...animal} />
+        ))}
+
+        {animals.length === 0 && 'No animals found'}
+      </ul>
+    </main>
+  );
+}
+
+// Dumb UI component
+function Animal({ type, name, age }) {
+  return (
+    <li>
+      <strong>{type}</strong> {name} ({age} years old)
+    </li>
+  );
+}
+
+// Custom Hook
+function useAnimalSearch() {
   const [animals, setAnimals] = useState([]);
 
   useEffect(() => {
-    const prev = localStorage.getItem('lastQuery') || [];
-    setAnimals(prev);
+    const lastQuery = localStorage.getItem('lastQuery');
+    search(lastQuery);
   }, []);
+
   const search = async (q) => {
     const response = await fetch(
-      'http://localhost:8080/animals?' + new URLSearchParams({ q })
+      'http://localhost:8080?' + new URLSearchParams({ q })
     );
     const data = await response.json();
     setAnimals(data);
-    localStorage.setItem('lastQuery', animals);
+
+    localStorage.setItem('lastQuery', q);
   };
 
   return { search, animals };
-}
-
-function App() {
-  const { search, animals } = useAnimals();
-  return (
-    <>
-      <h1>Animal Search</h1>
-      <input
-        type="text"
-        placeholder="search"
-        onChange={(e) => console.log(search(e.target.value))}
-      />
-      <ul>
-        {animals.map((animal) => (
-          <Animal
-            key={animal.id}
-            animal={animal.animal}
-            name={animal.name}
-            age={animal.age}
-          />
-        ))}
-      </ul>
-    </>
-  );
-}
-
-function Animal({ animal, name, age }) {
-  return (
-    <li>
-      Name: {name} Animal: <strong>{animal}</strong> Age: {age}
-    </li>
-  );
 }
 
 export default App;
